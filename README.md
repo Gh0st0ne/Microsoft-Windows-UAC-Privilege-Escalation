@@ -33,7 +33,7 @@ prompt, in (unprivileged) standard user accounts with (blue) UAC prompt!
 # Demonstration
   ~~~~~~~~~~~~~
 
-### 1. Log on to an arbitrary unprivileged (standard) user account and start
+1. Log on to an arbitrary unprivileged (standard) user account and start
    the command processor, then run the following command lines to detect
    the user-writable directories below %SystemRoot%\ through creation of
    a hardlink named WRITABLE.EXE and collect their pathnames in the file
@@ -96,7 +96,7 @@ prompt, in (unprivileged) standard user accounts with (blue) UAC prompt!
    C:\Windows\System32\LogFiles\WMI
 ```
 
-### 2. Let's see whether the hardlinks WRITABLE.EXE can be (ab)used: copy an
+2. Let's see whether the hardlinks WRITABLE.EXE can be (ab)used: copy an
    arbitrary executable to all of them and execute it.
 
    JFTR: PrintUI.exe is one of the 63+ applications which have UAC auto-
@@ -126,7 +126,7 @@ prompt, in (unprivileged) standard user accounts with (blue) UAC prompt!
    JFTR: since PrintUI.exe runs elevated, PrintUI.dll runs elevated too!
 
 
-### 3. Let's verify the Authenticode signature of the copy of PrintUI.exe:
+3. Let's verify the Authenticode signature of the copy of PrintUI.exe:
 
 ```
    SignTool.exe VERIFY /A /V "%ProgramData%\WRITABLE.LOG"
@@ -144,7 +144,7 @@ prompt, in (unprivileged) standard user accounts with (blue) UAC prompt!
    to distribute detached digital signatures can store the filename!
 
 
-### 4. Let's see whether PrintUI.exe follows the guidance given by the MSRC
+4. Let's see whether PrintUI.exe follows the guidance given by the MSRC
    (Microsoft Security Response Center) in the almost 7 year old blog post
    <https://blogs.technet.microsoft.com/srd/2014/05/13/load-library-safely/>.
    the more than 10 year old security advisory
@@ -190,7 +190,7 @@ prompt, in (unprivileged) standard user accounts with (blue) UAC prompt!
    developers as well as their sound asleep quality^Wmiserability assurance!
 
 
-### 5. Let's see whether UAC auto-elevation is also possible in at least one
+5. Let's see whether UAC auto-elevation is also possible in at least one
    of the user-writable directories: log on to the UAC-controlled user
    account created during Windows setup, start an UNELEVATED (unprivileged)
    command prompt and run the following command lines:
