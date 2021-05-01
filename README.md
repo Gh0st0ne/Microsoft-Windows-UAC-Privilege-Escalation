@@ -31,7 +31,6 @@ prompt, in (unprivileged) standard user accounts with (blue) UAC prompt!
 
 
 # Demonstration
-  ~~~~~~~~~~~~~
 
 1. Log on to an arbitrary unprivileged (standard) user account and start
    the command processor, then run the following command lines to detect
